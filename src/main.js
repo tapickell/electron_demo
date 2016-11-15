@@ -6,24 +6,30 @@ const app = electron.app
 const BrowserWindow = electron.BrowserWindow
 const ipc = electron.ipcMain
 
-let mainWindow
+const windows = []
 
 app.on('ready', _ => {
-  mainWindow = new BrowserWindow({
-    height: 400,
-    width: 400
-  })
+  [1, 2, 3].forEach(_ => {
+    let win = new BrowserWindow({
+      height: 400,
+      width: 400
+    })
 
-  mainWindow.loadURL(`file://${__dirname}/countdown.html`)
+    win.loadURL(`file://${__dirname}/countdown.html`)
 
-  mainWindow.on('close', _ => {
-    mainWindow = null
+    win.on('close', _ => {
+      mainWindow = null
+    })
+
+    windows.push(win)
   })
 })
 
 ipc.on('countdown-start', _ => {
   console.log('countdown-start called')
   countdown(count => {
-    mainWindow.webContents.send('countdown', count)
+    windows.forEach(win => {
+      win.webContents.send('countdown', count)
+    })
   })
 })
